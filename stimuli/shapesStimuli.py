@@ -120,6 +120,9 @@ class Trial_flickeringShapes:
         coord[9,:] = np.array([coord[1,0], -height/2])
         coord[10,:] = np.array([coord[0,0], -height/2])
         coord[11,:] = np.array([-stroke,0])
+
+        coord[[0,1,3,4],1] += stroke
+        coord[[6,7,9,10],1] -= stroke
         return coord
 
     def _triangleCoordinates(self, width=10, stroke=2):
@@ -154,7 +157,7 @@ class Trial_flickeringShapes:
         coord = np.dstack((coordExt, coordInt))
         return coord
 
-    def _calcEquilateralVertices(self, edges, radius=0.5):
+    def _calcEquilateralVertices(self, edges, radius=5):
         """
         Get vertices for an equilateral shape with a given number of sides, will assume radius is 0.5 (relative) but
         can be manually specified
