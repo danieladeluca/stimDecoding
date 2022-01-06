@@ -2,8 +2,15 @@
 Decoding visual stimuli from cortical activity
 
 # Requirements
+
+## Python-side
 - Psychopy
 - Numpy
+
+## MATLAB-side
+- MATLAB 2021
+- Image Acquisition Toolbox
+- Instrumet Control Toolbox
 
 # Contents
 - Stimuli
