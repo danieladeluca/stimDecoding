@@ -1,9 +1,11 @@
+clearvars, close all, clc
+
 %% MAIN SETTINGS
 
 % EXPERIMENT SETTINGS
 % -------------------------------------------------------------------------
 settings.stimuli = {'circle','cross','triangle'};
-settings.repetitions = 2;
+settings.repetitions = 40;
 settings.preStim = 1;                           % in seconds
 settings.durStim = 1;                           % in seconds
 settings.postStim = 4;                          % in seconds
@@ -18,14 +20,8 @@ settings.tcp.port = 40000;
 
 nFrames = 60;
 
-
 %% Connect to the camera and initialize it
 [vid, src] = loadCamera_PCOEdge();
-
-% totalDuration = settings.preStim + settings.durStim + settings.postStim;
-% vid.FramesPerTrigger = round(totalDuration * str2double(src.FrameRate));
-vid.FramesPerTrigger = 1;
-vid.TriggerRepeat = 59;
 
 %% Setup TCP/IP connection with the psychopy instance on localhost
 stimList = pseudorandomSequence(settings.stimuli, settings.repetitions);
@@ -51,6 +47,7 @@ m = matfile([pth filesep 'rec_' datestr(now, 'YYYYmmDD-hhMMss') '.mat'],...
 m.rawTriangle = rawTriangle;
 m.rawCircle = rawCircle;
 m.rawCross = rawCross;
+m.settings = settings;
 
 clear rawTriangle rawCircle rawCross
 crossN = 1;
@@ -60,6 +57,10 @@ circleN = 1;
 for i = 1:length(stimList)
     fprintf('Trial [%u/%u]...', i, length(stimList))
     start(vid)
+    fprintf('start, ')
+    trigger(vid)
+    fprintf('soft Trig, ')
+    pause(1)
     % Send current trial to python that whil trigget the camera
     fwrite(tcp, stimList{i});
     % Wait for the acquisition to finish
@@ -67,10 +68,9 @@ for i = 1:length(stimList)
     fprintf(' done.\n Processing...')
     % Preprocess data, save it and display preview
     [data,time] = getdata(vid, nFrames);
-    stop(vid)
     fprintf(' got data. ')
     if i == 1
-        [f, im_T, im_C, im_X] = createPreviewFigure([w, h]);
+        [f, im_T, im_C, im_X] = createPreviewFigure([h, w]);
     end
     
     data = imresize(squeeze(data),0.5);
@@ -78,22 +78,22 @@ for i = 1:length(stimList)
     switch stimList{i}
         case 'triangle'
             saveRawData(m, data, 'triangle', triangleN)
-            updatePreviewFigure(im_T, sumImg_Triangle, data, triangleN)
+            sumImg_Triangle = updatePreviewFigure(im_T, sumImg_Triangle, data, triangleN);
             triangleN = triangleN + 1;
         case 'cross'
             saveRawData(m, data, 'cross', crossN)
-            updatePreviewFigure(im_X, sumImg_Cross, data, crossN)
+            sumImg_Cross = updatePreviewFigure(im_X, sumImg_Cross, data, crossN);
             crossN = crossN + 1;
         case 'circle'
             saveRawData(m, data, 'circle', circleN)
-            updatePreviewFigure(im_C, sumImg_Circle, data, circleN)
+            sumImg_Circle = updatePreviewFigure(im_C, sumImg_Circle, data, circleN);
             circleN = circleN + 1;
     end
     fprintf('done.\n')
 end
+fprintf('END OF RECORDING.\n')
 fwrite(tcp, 'stop');
 fclose(tcp);
-
 
 %% cleanup
 
@@ -102,7 +102,6 @@ fclose(tcp);
 close all
 clear all
 clc
-
 
 
 

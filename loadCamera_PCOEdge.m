@@ -12,11 +12,15 @@ src = getselectedsource(vid);
 
 % Setup the Camera acquisition parameters
 src.E1ExposureTime_unit = 'ms';
-src.E2ExposureTime = 80;
+src.E2ExposureTime = 100;
 
 src.B1BinningHorizontal = '04';
 src.B2BinningVertical = '04';
 
-triggerconfig(vid, 'hardware', '', 'ExternExposureStart');
+src.AMAcquireMode = 'sequence_trigger';
+src.AMImageNumber = 60;
+vid.FramesPerTrigger = 60;
+src.IO_2SignalPolarity = 'low';
 
+triggerconfig(vid, 'manual');
 fprintf(' done\n')
