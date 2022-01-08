@@ -1,141 +1,121 @@
+from psychopy import visual, monitors, parallel
+from stimuli.shapesStimuli import Trial_flickeringShapes
+import socket
+from time import sleep
 
-def triggerControl(pPort):
-    clk = core.Clock()
-    clk.reset()
-    framesAcquired = 0
-    while framesAcquired < 60:
-        if clk.getTime() >= .1:
-            pPort.setData(int("00000001",2))
-            sleep(.001)
-            pPort.setData(int("00000000",2))
-            framesAcquired += 1
-            clk.reset()
+# ------------------------------------------------------------------------------
+# -- PARAMETERS DEFINITIONS
+# ------------------------------------------------------------------------------
 
-if __name__ == '__main__':
-    from psychopy import visual, monitors, parallel, core
-    from stimuli.shapesStimuli import Trial_flickeringShapes
-    import socket
-    from threading import Thread
-    from time import sleep
+# STIMULI
+# ---------------
+shapesWidth = 20
+shapesStroke = 2
+chkbrdTempFreq = 5
+chkbrdSpFreq = 0.08
+chkbrdContrast = 0.8
+prestimFrames = 60
+stimFrames = 60
+postStimFrames = 240
 
-    # ------------------------------------------------------------------------------
-    # -- PARAMETERS DEFINITIONS
-    # ------------------------------------------------------------------------------
+# MONITOR
+# ---------------
+distanceCm = 20
+monitorWidthCm = 52
+monitorResolution = [1920, 1080]
 
-    # STIMULI
-    # ---------------
-    shapesWidth = 40
-    shapesStroke = 4
-    chkbrdTempFreq = 5
-    chkbrdSpFreq = 0.08
-    chkbrdContrast = 0.8
-    prestimFrames = 60
-    stimFrames = 60
-    postStimFrames = 240
+# TPC/IP Communication
+# ---------------
+TCP_ip = '192.168.1.2'      # IP address of the recording machine
+TCP_port = 40000            # 
+TCP_buffSize = 4096
 
-    # MONITOR
-    # ---------------
-    distanceCm = 20
-    monitorWidthCm = 52
-    monitorResolution = [1920, 1080]
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-    # TPC/IP Communication
-    # ---------------
-    TCP_ip = '192.168.1.2'      # IP address of the recording machine
-    TCP_port = 40000            # 
-    TCP_buffSize = 4096
+mon = monitors.Monitor('TestMonitor')
+mon.setDistance(distanceCm)
+mon.setWidth(monitorWidthCm)
 
-    # ------------------------------------------------------------------------------
-    # ------------------------------------------------------------------------------
+pPort = parallel.ParallelPort(address = '0xD010')
+# pPort.setData(int("00000001",2))
 
-    mon = monitors.Monitor('TestMonitor')
-    mon.setDistance(distanceCm)
-    mon.setWidth(monitorWidthCm)
+# Main stimulation window
+stimWin = visual.Window(
+    size = monitorResolution,
+    screen = 0,
+    fullscr = True,
+    units = 'deg',
+    monitor = mon,
+    allowStencil = True
+)
 
-    pPort = parallel.ParallelPort(address = '0xD010')
+# Aperture object
+mask = visual.Aperture(stimWin)
 
-
-
-
-    # Main stimulation window
-    stimWin = visual.Window(
-        size = monitorResolution,
-        screen = 0,
-        fullscr = True,
-        units = 'deg',
-        monitor = mon,
-        allowStencil = True
+# Cross stimulus object
+cross = Trial_flickeringShapes(
+    stimWin,
+    mask,
+    pPort = pPort,
+    shape='cross',
+    width = shapesWidth,
+    stroke = shapesStroke,
+    chkbrdTempFreq = chkbrdTempFreq,
+    chkbrdSpFreq = chkbrdSpFreq,
+    chkbrdContrast = chkbrdContrast,
+    prestimFrames = prestimFrames,
+    stimFrames = stimFrames,
+    postStimFrames = postStimFrames
+    )
+# Circle stimulus object
+circle = Trial_flickeringShapes(
+    stimWin,
+    mask,
+    pPort = pPort,
+    shape='circle',
+    width = shapesWidth,
+    stroke = shapesStroke,
+    chkbrdTempFreq = chkbrdTempFreq,
+    chkbrdSpFreq = chkbrdSpFreq,
+    chkbrdContrast = chkbrdContrast,
+    prestimFrames = prestimFrames,
+    stimFrames = stimFrames,
+    postStimFrames = postStimFrames
+    )
+# Triangle stimulus object
+triangle = Trial_flickeringShapes(
+    stimWin,
+    mask,
+    pPort = pPort,
+    shape='triangle',
+    width = shapesWidth,
+    stroke = shapesStroke,
+    chkbrdTempFreq = chkbrdTempFreq,
+    chkbrdSpFreq = chkbrdSpFreq,
+    chkbrdContrast = chkbrdContrast,
+    prestimFrames = prestimFrames,
+    stimFrames = stimFrames,
+    postStimFrames = postStimFrames
     )
 
-    # Aperture object
-    mask = visual.Aperture(stimWin)
+tcpObj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+tcpObj.connect((TCP_ip, TCP_port))
+tcpObj.settimeout(600)
 
-    # Cross stimulus object
-    cross = Trial_flickeringShapes(
-        stimWin,
-        mask,
-        pPort = pPort,
-        shape='cross',
-        width = shapesWidth,
-        stroke = shapesStroke,
-        chkbrdTempFreq = chkbrdTempFreq,
-        chkbrdSpFreq = chkbrdSpFreq,
-        chkbrdContrast = chkbrdContrast,
-        prestimFrames = prestimFrames,
-        stimFrames = stimFrames,
-        postStimFrames = postStimFrames
-        )
-    # Circle stimulus object
-    circle = Trial_flickeringShapes(
-        stimWin,
-        mask,
-        pPort = pPort,
-        shape='circle',
-        width = shapesWidth,
-        stroke = shapesStroke,
-        chkbrdTempFreq = chkbrdTempFreq,
-        chkbrdSpFreq = chkbrdSpFreq,
-        chkbrdContrast = chkbrdContrast,
-        prestimFrames = prestimFrames,
-        stimFrames = stimFrames,
-        postStimFrames = postStimFrames
-        )
-    # Triangle stimulus object
-    triangle = Trial_flickeringShapes(
-        stimWin,
-        mask,
-        pPort = pPort,
-        shape='triangle',
-        width = shapesWidth,
-        stroke = shapesStroke,
-        chkbrdTempFreq = chkbrdTempFreq,
-        chkbrdSpFreq = chkbrdSpFreq,
-        chkbrdContrast = chkbrdContrast,
-        prestimFrames = prestimFrames,
-        stimFrames = stimFrames,
-        postStimFrames = postStimFrames
-        )
+while True:
+    msg = tcpObj.recv(TCP_buffSize)
+    msg = msg.decode('utf8')
+    print(f'TRIAL: {msg}')
 
-    tcpObj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcpObj.connect((TCP_ip, TCP_port))
-    tcpObj.settimeout(600)
-
-    p = Thread(target=triggerControl, args=(pPort,))
-
-
-    while True:
-        msg = tcpObj.recv(TCP_buffSize)
-        msg = msg.decode('utf8')
-        print(f'TRIAL: {msg}')
-
-        if msg == 'cross':
-            p.start()
-            cross.doTrial()
-        elif msg == 'circle':
-            p.start()
-            circle.doTrial()
-        elif msg == 'triangle':
-            p.start()
-            triangle.doTrial()
-        elif msg == 'stop':
-            break
+    if msg == 'cross':
+        cross.doTrial()
+        print('End of Trial')
+    elif msg == 'circle':
+        circle.doTrial()
+        print('End of Trial')
+    elif msg == 'triangle':
+        triangle.doTrial()
+        print('End of Trial')
+    elif msg == 'stop':
+        break

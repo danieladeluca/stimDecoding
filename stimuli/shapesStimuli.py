@@ -1,8 +1,7 @@
-from multiprocessing import Process
 from psychopy import core, visual
 import numpy as np
 import math
-import time
+from time import sleep
 
 
 class Trial_flickeringShapes:
@@ -81,29 +80,20 @@ class Trial_flickeringShapes:
         self.revClock = core.Clock()
         self.revClock.reset()
 
-
-    def triggerControl(self):
-        clk = core.Clock()
-        clk.reset()
-        framesAcquired = 0
-        while framesAcquired < 60:
-            if clk.getTime() >= .1:
-                self.pPort.setData(int("00000001",2))
-                time.sleep(.001)
-                self.pPort.setData(int("00000000",2))
-                framesAcquired += 1
-                clk.reset()
-
-
     def doTrial(self):
         # Change the aperture to only render the central part of the stimulus
         self.aperture._shape.vertices = self.outerEdges
         self.aperture._needVertexUpdate = True
         self.aperture._reset()
 
-        # if self.pPort != 0:
-        #     thread = Process(target = self.triggerControl)
-        #     thread.start()
+        # self.pPort.setData(int("00000001",2))
+
+        # Send starting Trigger
+        if self.pPort != 0:
+            print('HW Triggering!')
+            self.pPort.setData(int("00000000",2))
+            sleep(.001)
+            self.pPort.setData(int("00000001",2))
 
         # PRESTIM
         for _ in range(self.prestimFrames):
@@ -121,7 +111,6 @@ class Trial_flickeringShapes:
         for _ in range(self.postStimFrames):
             self.stimWindow.flip()
         
-        # thread.join()
     #---------------------------------------------------------------------------
     #--- INTERNAL FUNCTIONS
     #---------------------------------------------------------------------------
