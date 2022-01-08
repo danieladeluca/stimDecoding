@@ -1,6 +1,8 @@
+from multiprocessing import Process
 from psychopy import core, visual
 import numpy as np
 import math
+import time
 
 
 class Trial_flickeringShapes:
@@ -8,6 +10,7 @@ class Trial_flickeringShapes:
     def __init__(self,
                 stimWin,
                 aperture,
+                pPort = 0,
                 shape = 'cross',
                 width = 20,
                 stroke = 2,
@@ -21,6 +24,7 @@ class Trial_flickeringShapes:
 
         self.stimWindow = stimWin
         self.aperture = aperture
+        self.pPort = pPort 
         self.shape = shape
         self.width = width
         self.stroke = stroke
@@ -77,17 +81,35 @@ class Trial_flickeringShapes:
         self.revClock = core.Clock()
         self.revClock.reset()
 
-    def doTrial(self, sendTrigger=False):
+
+    def triggerControl(self):
+        clk = core.Clock()
+        clk.reset()
+        framesAcquired = 0
+        while framesAcquired < 60:
+            if clk.getTime() >= .1:
+                self.pPort.setData(int("00000001",2))
+                time.sleep(.001)
+                self.pPort.setData(int("00000000",2))
+                framesAcquired += 1
+                clk.reset()
+
+
+    def doTrial(self):
         # Change the aperture to only render the central part of the stimulus
         self.aperture._shape.vertices = self.outerEdges
         self.aperture._needVertexUpdate = True
         self.aperture._reset()
 
+        # if self.pPort != 0:
+        #     thread = Process(target = self.triggerControl)
+        #     thread.start()
+
         # PRESTIM
         for _ in range(self.prestimFrames):
             self.stimWindow.flip()
         # STIM
-        for _ in range(self.prestimFrames):
+        for _ in range(self.stimFrames):
             if self.revClock.getTime() >= 1/self.chkbrdTempFreq:
                 self.checkerboard.phase += (0.5, 0)
                 self.revClock.reset()
@@ -98,7 +120,8 @@ class Trial_flickeringShapes:
         # POSTSTIM
         for _ in range(self.postStimFrames):
             self.stimWindow.flip()
-
+        
+        # thread.join()
     #---------------------------------------------------------------------------
     #--- INTERNAL FUNCTIONS
     #---------------------------------------------------------------------------
@@ -171,16 +194,21 @@ class Trial_flickeringShapes:
 
 if __name__ == '__main__':
 
-    from psychopy import monitors
+    from psychopy import monitors, parallel
 
     mon = monitors.Monitor('TestMonitor')
-    mon.setDistance(50)
-    mon.setWidth(56)
+    mon.setDistance(20)
+    mon.setWidth(52)
+
+    width = 40
+    stroke = 4
+
+    pPort = parallel.ParallelPort(address = '0xD010')
 
     stimWin = visual.Window(
-        size = (1200,800),
+        size = (1920,1080),
         screen = 0,
-        fullscr = False,
+        fullscr = True,
         units = 'deg',
         monitor = mon,
         allowStencil = True
@@ -192,19 +220,25 @@ if __name__ == '__main__':
         stimWin,
         mask,
         shape='cross',
-        chkbrdSpFreq=0.3)
+        width = width,
+        stroke = stroke,
+        chkbrdSpFreq=0.08)
 
     circle = Trial_flickeringShapes(
         stimWin,
         mask,
         shape='circle',
-        chkbrdSpFreq=0.3)
+        width = width,
+        stroke = stroke,
+        chkbrdSpFreq=0.08)
     
     triangle = Trial_flickeringShapes(
         stimWin,
         mask,
         shape='triangle',
-        chkbrdSpFreq=0.3)
+        width = width,
+        stroke = stroke,
+        chkbrdSpFreq=0.08)
 
     for _ in range(1):
         cross.doTrial()
