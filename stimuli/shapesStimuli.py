@@ -15,7 +15,9 @@ aperture object that also has to be provided as the aperture argument.
 
 Optionally, the class can also send a trigger through a parallel port at the beginning of 
 each trial to trigger recording equipment. To do this, you have to provide a
-psychopy parallelPort object as the optional pPort object
+psychopy parallelPort object as the optional pPort object. Also you have to specify 
+which of the 8 pins of the LPT port you want to use as a trigger with the triggerPin 
+argument (default:1).
 
 Parameters of the visual stimulation can be fine tuned by changing the various
 arguments at the moment of object instantiation.
@@ -32,6 +34,7 @@ class Trial_flickeringShapes:
                 stimWin,                    # Psychopy window object
                 aperture,                   # Psychopy aperture object
                 pPort = 0,                  # Psychopy parallel port object (for triggering)
+                triggerPin = 1,             # If the parallel port is available, which pin to use
                 shape = 'cross',            # Stimulus shape. can be 'cross','triangle', or 'circle'
                 width = 20,                 # Width (in degrees) of the shape
                 stroke = 2,                 # Thickness of the shape
@@ -48,6 +51,7 @@ class Trial_flickeringShapes:
         self.stimWindow = stimWin
         self.aperture = aperture
         self.pPort = pPort 
+        self.triggerPin = triggerPin
         self.shape = shape
         self.width = width
         self.stroke = stroke
@@ -62,6 +66,16 @@ class Trial_flickeringShapes:
         msg = "Shape must be one of 'cross','triangle', or 'circle'"
         assert shape in ['cross','triangle','circle'], msg
         
+        # Check that the pin for the trigger is an int between 1 and 8
+        msg = "triggerPin must be an integer between 1 and 8."
+        if not isinstance(self.triggerPin, int):
+            raise NameError(msg)
+        if self.triggerPin>8 or self.triggerPin<1:
+            raise NameError(msg)
+        # Calculate the value to send to the parallel port to switch up only the
+        # desired pin
+        self.trigValue = 2**(self.triggerPin-1)
+
         # Calculate the proper shape coordinates
         # coord is a (M by 2 by 2) np array.
         # coord[:,:,0] are the [x,y] coordinates of the outer edges of the shape;
@@ -119,9 +133,9 @@ class Trial_flickeringShapes:
         # Send a Trigger for the start of the trial in case the user specified 
         # a parallel port object
         if self.pPort != 0:
-            self.pPort.setData(int("00000000",2))
-            sleep(.001)
-            self.pPort.setData(int("00000001",2))
+            self.pPort.setData(int("00000000",2))   # Force all the pins LOW
+            sleep(.001)                             # 1ms trigger length
+            self.pPort.setData(self.trigValue)      # Pull back HIGH the desired pin 
 
         # STIMULATION LOOP
         # -----------------------------    
@@ -212,7 +226,6 @@ class Trial_flickeringShapes:
 
 # Example implementation of the three stimuli
 if __name__ == '__main__':
-
     """ 
     The monitor setup is only useful to get an approximately reproducible 
     output in many different screens. Feel free to use your own psychopy monitor 
@@ -251,7 +264,7 @@ if __name__ == '__main__':
     # Create a Psychopy aperture object
     mask = visual.Aperture(stimWin)
 
-    # Object for the cross
+    # Create an object for the cross
     cross = Trial_flickeringShapes(
         stimWin,
         mask,
@@ -265,7 +278,7 @@ if __name__ == '__main__':
         stimFrames=stimFrames,
         postStimFrames=postStimFrames)
 
-    # Object for the circle
+    # Create an object for the circle
     circle = Trial_flickeringShapes(
         stimWin,
         mask,
@@ -279,7 +292,7 @@ if __name__ == '__main__':
         stimFrames=stimFrames,
         postStimFrames=postStimFrames)
     
-    # Object for the triangle
+    # Create an object for the triangle
     triangle = Trial_flickeringShapes(
         stimWin,
         mask,
