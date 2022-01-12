@@ -18,7 +18,7 @@ saved and the raw data is in the variable avgMovie
 
 % Change accordingly to point to the location on the HDD where the
 % retinotopy recordings are stored
-RETINOTOPY_DATA_FOLDER = 'G:\Pizzorusso Lab\stimDecoding\OLD_V1\';
+RETINOTOPY_DATA_FOLDER = 'C:\Users\danie\OneDrive - Scuola Superiore Sant''Anna\DATA_MICE_Pizzorusso\OLD_V1';
 
 % Add all the subfolders of the curent folder to the MATLAB path
 addpath(genpath(pwd))
