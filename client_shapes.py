@@ -191,6 +191,23 @@ t_letter = Trial_flickeringShapes(
     stimFrames = stimFrames,
     postStimFrames = postStimFrames
     )
+
+# Create the  s_letter stimulus object
+s_letter = Trial_flickeringShapes(
+    stimWin,
+    mask,
+    pPort = pPort,
+    triggerPin=triggerPin,
+    shape='s_letter',
+    width = shapesWidth,
+    stroke = shapesStroke,
+    chkbrdTempFreq = chkbrdTempFreq,
+    chkbrdSpFreq = chkbrdSpFreq,
+    chkbrdContrast = chkbrdContrast,
+    prestimFrames = prestimFrames,
+    stimFrames = stimFrames,
+    postStimFrames = postStimFrames
+    )
 # Start TCP/IP communication with the server PC
 tcpObj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 tcpObj.connect((TCP_ip, TCP_port))
@@ -228,6 +245,9 @@ while True:
         print('End of Trial')
     elif msg == 't_letter':
         t_letter.doTrial()
+        print('End of Trial')
+    elif msg == 's_letter':
+        s_letter.doTrial()
         print('End of Trial')
     elif msg == 'stop':
         break
