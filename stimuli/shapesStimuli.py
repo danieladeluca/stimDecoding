@@ -65,7 +65,7 @@ class Trial_flickeringShapes:
         # Check that a supported shape is requested
         msg = "Shape must be one of 'cross','triangle', or 'circle'"
         assert shape in ['cross', 'triangle', 'circle', 'square', 'h_letter',
-                         'v_letter', 'star', 't_letter', 's_letter'], msg
+                         'v_letter', 'star', 't_letter', 's_letter', 'w_letter', msg]
         
         # Check that the pin for the trigger is an int between 1 and 8
         msg = "triggerPin must be an integer between 1 and 8."
@@ -100,6 +100,8 @@ class Trial_flickeringShapes:
             coord = self._t_letterCoordinates(width=width, stroke=stroke)
         elif shape == 's_letter':
             coord = self._s_letterCoordinates(width=width, stroke=stroke)
+        elif shape == 'w_letter':
+            coord = self._w_letterCoordinates(width=width, stroke=stroke)
 
         # Generate the coordinates for restricting the stimulus visibility by
         # using both aperture and an optional shapeStim for shapes with holes
@@ -327,6 +329,22 @@ class Trial_flickeringShapes:
         coord[11, :] = [- width/2 - stroke, -width/2 + stroke]
         return coord
 
+    def _w_letterCoordinates(self, width=10, stroke=2):
+        coord = np.zeros([12, 2])
+        coord[0, :] = [-width/4 - stroke, -width/2 - stroke]
+        coord[1, :] = [-width/4 + stroke/2, -width/2 - stroke]
+        coord[2, :] = [0, -stroke]
+        coord[3, :] = [width/4 - stroke/2, -width/2 - stroke]
+        coord[4, :] = [width/4 + stroke, -width/2 - stroke]
+        coord[5, :] = [width/2 + stroke, width/2 + stroke]
+        coord[6, :] = [width/2 - stroke, width/2 + stroke]
+        coord[7, :] = [width/4 - stroke/4, -stroke]
+        coord[8, :] = [0, (3/2)*stroke]
+        coord[9, :] = [-width/4 + stroke/4, -stroke]
+        coord[10, :] = [-width/2 + stroke, width/2 + stroke]
+        coord[11, :] = [-width/2 - stroke, width/2 + stroke]
+        return coord
+
 # Example implementation of the three stimuli
 if __name__ == '__main__':
     """ 
@@ -493,6 +511,20 @@ if __name__ == '__main__':
         stimFrames=stimFrames,
         postStimFrames=postStimFrames)
 
+    # Create an object for the w_letter
+    w_letter = Trial_flickeringShapes(
+        stimWin,
+        mask,
+        shape='w_letter',
+        width=width,
+        stroke=stroke,
+        chkbrdSpFreq=chkbrdSpFreq,
+        chkbrdTempFreq=chkbrdTempFreq,
+        chkbrdContrast=chkbrdContrast,
+        prestimFrames=prestimFrames,
+        stimFrames=stimFrames,
+        postStimFrames=postStimFrames)
+
     # Show trials for each shape
     for _ in range(1):
         cross.doTrial()
@@ -503,5 +535,6 @@ if __name__ == '__main__':
         #v_letter.doTrial()
         #star.doTrial()
         #t_letter.doTrial()
-        s_letter.doTrial()
+        #s_letter.doTrial()
+        w_letter.doTrial()
 
